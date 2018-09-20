@@ -6,14 +6,8 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -march=native")
 endif ()
 
-add_subdirectory(ext/mysql-connector-cpp)
 add_executable(mySqlBenchmark main.cpp)
 
-target_include_directories(mySqlBenchmark
-        PRIVATE .
-        PRIVATE ext/mysql-connector-cpp/include
-        )
-
 target_link_libraries(mySqlBenchmark
-        connector
+        mysqlclient
         )
