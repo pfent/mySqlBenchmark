@@ -26,7 +26,8 @@ enum class MySqlConnection {
     SharedMemory
 };
 
-auto mySqlConnect(MYSQL &mysql, MySqlConnection connectionType, const char* user, const char* password, const char* database) {
+auto mySqlConnect(MYSQL &mysql, MySqlConnection connectionType, const char *user, const char *password,
+                  const char *database) {
     std::cout << "Connecting via ";
     auto protocolType = [&] {
         switch (connectionType) {
@@ -63,7 +64,7 @@ auto mySqlQuery(MYSQL &mysql, const std::string &query) {
     }
 }
 
-auto mySqlUseReult(MYSQL &mysql) {
+auto mySqlUseResult(MYSQL &mysql) {
     auto result = mysql_use_result(&mysql);
     if (result == nullptr) {
         throw std::runtime_error(std::string("Couldn't fetch query ") + mysql_error(&mysql));
@@ -81,6 +82,55 @@ std::optional<MYSQL_ROW> mySqlFetchRow(MYSQL_RES *result) {
         return std::nullopt;
     }
     return row;
+}
+
+auto mySqlCreateStatement(MYSQL &mysql) {
+    auto statement = mysql_stmt_init(&mysql);
+    if (statement == nullptr) {
+        throw std::runtime_error(std::string("Couldn't allocate statement ") + mysql_error(&mysql));
+    }
+
+    return std::unique_ptr<MYSQL_STMT, decltype(&mysql_stmt_close)>(statement, &mysql_stmt_close);
+}
+
+/**
+ * value shall not contain a semicolon ;
+ */
+auto mySqlPrepareStatement(MYSQL_STMT *statement, const std::string &value) {
+    if (mysql_stmt_prepare(statement, value.c_str(), value.length()) != 0) {
+        throw std::runtime_error(std::string("Couldn't prepare statement ") + mysql_stmt_error(statement));
+    }
+}
+
+auto mySqlExectureStatement(MYSQL_STMT *statement) {
+    if (mysql_stmt_execute(statement) != 0) {
+        throw std::runtime_error(std::string("Couldn't execute statement ") + mysql_stmt_error(statement));
+    }
+}
+
+auto mySqlRequestCursor(MYSQL_STMT *statement) {
+    auto type = (unsigned long) CURSOR_TYPE_READ_ONLY;
+    if (mysql_stmt_attr_set(statement, STMT_ATTR_CURSOR_TYPE, &type) != 0) {
+        throw std::runtime_error(std::string("Couldn't request cursor ") + mysql_stmt_error(statement));
+    }
+}
+
+auto mySqlBindResult(MYSQL_STMT *statement, MYSQL_BIND *bind) {
+    if (mysql_stmt_bind_result(statement, bind) != 0) {
+        throw std::runtime_error(std::string("Couldn't bind result ") + mysql_stmt_error(statement));
+    }
+}
+
+auto mySqlStatementFetch(MYSQL_STMT *statement) {
+    if (mysql_stmt_fetch(statement) != 0) {
+        throw std::runtime_error(std::string("Couldn't fetch data ") + mysql_stmt_error(statement));
+    }
+}
+
+auto mySqlStatementStore(MYSQL_STMT *statement) {
+    if (mysql_stmt_store_result(statement) != 0) {
+        throw std::runtime_error(std::string("Couldn't store result data ") + mysql_stmt_error(statement));
+    }
 }
 
 #endif //MYSQLBENCHMARK_MYSQLUTILS_H
