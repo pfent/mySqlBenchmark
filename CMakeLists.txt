@@ -8,6 +8,12 @@ endif ()
 
 add_executable(mySqlBenchmark main.cpp)
 
+set(MYSQL_DIR "C:/Program Files/MySQL/MySQL Connector C 6.1"    CACHE PATH "The path to the MySQL C API library")
+include_directories(${MYSQL_DIR}/include)
+
+find_library(mysql NAMES libmysql PATHS ${MYSQL_DIR}/lib)
+message(STATUS "mysql library: " ${mysql})
+
 target_link_libraries(mySqlBenchmark
-        mysqlclient
+        ${mysql}
         )

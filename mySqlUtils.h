@@ -6,7 +6,7 @@
 #include <memory>
 #include <optional>
 #include <iostream>
-#include <mysql/mysql.h>
+#include <mysql.h>
 
 template<typename T>
 auto bench(T &&fun) {
@@ -26,6 +26,10 @@ enum class MySqlConnection {
     SharedMemory
 };
 
+void myClose(MYSQL*) {
+	//mysql_close
+}
+
 auto mySqlConnect(MYSQL &mysql, MySqlConnection connectionType, const char *user, const char *password,
                   const char *database) {
     std::cout << "Connecting via ";
@@ -44,18 +48,18 @@ auto mySqlConnect(MYSQL &mysql, MySqlConnection connectionType, const char *user
                 std::cout << "Shared Memory";
                 return mysql_protocol_type::MYSQL_PROTOCOL_MEMORY;
             default:
-                __builtin_unreachable();
+                throw;
         }
     }();
     std::cout << '\n';
 
     mysql_options(&mysql, MYSQL_OPT_PROTOCOL, &protocolType);
 
-    if (not mysql_real_connect(&mysql, nullptr, user, password, database, 0, nullptr, 0)) {
+    if (! mysql_real_connect(&mysql, nullptr, user, password, database, 0, nullptr, 0)) {
         throw std::runtime_error(std::string("Couldn't connect: ") + mysql_error(&mysql));
     }
 
-    return std::unique_ptr<MYSQL, decltype(&mysql_close)>(&mysql, &mysql_close);
+    return std::unique_ptr<MYSQL, decltype(&myClose)>(&mysql, &myClose);
 }
 
 auto mySqlQuery(MYSQL &mysql, const std::string &query) {

@@ -1,6 +1,6 @@
 #include <chrono>
 #include <iostream>
-#include <mysql/mysql.h>
+#include <mysql.h>
 #include "mySqlUtils.h"
 
 void doSmallTx(MYSQL &mysql) {
@@ -85,6 +85,7 @@ int main(int argc, const char *argv[]) {
 
     for (auto connection : connections) {
         try {
+			mysql_init(&mysql);
             const auto c = mySqlConnect(mysql, connection, user, password, database);
 
             doSmallTx(mysql);
