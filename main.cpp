@@ -49,8 +49,8 @@ void prepareYcsb(MYSQL &mysql) {
 
    int i = 0;
    for (auto&[key, value] : db.database) {
-      if (i % 1000 == 0) {
-         std::cout << static_cast<double>(i) * 100 / ycsb_tuple_count << "%\n";
+      if (i % (ycsb_tuple_count / 100) == 0) {
+         std::cout << "\r" << static_cast<double>(i) * 100 / ycsb_tuple_count << "%" << std::flush;
       }
       ++i;
       auto statement = std::string("INSERT INTO Ycsb VALUES ");
@@ -65,27 +65,21 @@ void prepareYcsb(MYSQL &mysql) {
       statement += ";";
       mySqlQuery(mysql, statement);
    }
+   std::cout << "\n";
 }
 
 void doLargeResultSet(MYSQL &mysql) {
-   prepareYcsb(mysql);
-
    const auto resultSizeMB = static_cast<double>(ycsb_tuple_count) * ycsb_field_count * ycsb_field_length / 1024 / 1024;
    std::cout << "benchmarking " << resultSizeMB << "MB data transfer" << '\n';
 
    auto statement = mySqlCreateStatement(mysql);
-   mySqlPrepareStatement(statement.get(), "SELECT value FROM Ycsb");
+   mySqlPrepareStatement(statement.get(), "SELECT v1,v2,v3,v4,v5,v6,v7,v8,v9,v10 FROM Ycsb");
 
-   auto resultKey = int();
    auto result = std::array<std::array<char, ycsb_field_length>, ycsb_field_count>();
-   MYSQL_BIND resultBind[11];
-   resultBind[0] = MYSQL_BIND();
-   resultBind[0].buffer_type = MYSQL_TYPE_LONG;
-   resultBind[0].buffer = &resultKey;
-   resultBind[0].buffer_length = sizeof(resultKey);
-   for (size_t i = 1; i < 10; ++i) {
+   MYSQL_BIND resultBind[10];
+   for (size_t i = 0; i < 10; ++i) {
       resultBind[i] = MYSQL_BIND();
-      resultBind[i].buffer_type = MYSQL_TYPE_VARCHAR;
+      resultBind[i].buffer_type = MYSQL_TYPE_STRING;
       resultBind[i].buffer = &result[i];
       resultBind[i].buffer_length = sizeof(result[i]);
    }
@@ -149,9 +143,6 @@ int main(int argc, const char* argv[]) {
       }
       std::cout << '\n';
    }
-
-   // TODO: query connection type:
-   // select connection_type from performance_schema.threads where connection_type is not null and processlist_state is not null;
 
    return 0;
 }
