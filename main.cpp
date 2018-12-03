@@ -33,8 +33,6 @@ void doSmallTx2(MYSQL &mysql) {
       }
    });
 
-   mySqlStatementClose(mysql, statement.get());
-
    std::cout << iterations / timeTaken << " msg/s\n";
 }
 
@@ -49,21 +47,24 @@ void prepareYcsb(MYSQL &mysql) {
    create += ");";
    mySqlQuery(mysql, create);
 
-   int i = 0;
-   for (auto&[key, value] : db.database) {
+   for (auto it = db.database.begin(); it != db.database.end();) {
+      auto i = std::distance(db.database.begin(), it);
       if (i % (ycsb_tuple_count / 100) == 0) {
          std::cout << "\r" << static_cast<double>(i) * 100 / ycsb_tuple_count << "%" << std::flush;
       }
-      ++i;
       auto statement = std::string("INSERT INTO Ycsb VALUES ");
-      statement += "(" + std::to_string(key) + ", ";
-      for (auto &v : value.rows) {
-         statement += "'";
-         statement += v.data();
-         statement += "', ";
+      for (int j = 0; j < 100; ++j, ++it) {
+         auto&[key, value] = *it;
+         statement += "(" + std::to_string(key) + ", ";
+         for (auto &v : value.rows) {
+            statement += "'";
+            statement += v.data();
+            statement += "', ";
+         }
+         statement.resize(statement.length() - 2); // remove last comma
+         statement += "), ";
       }
       statement.resize(statement.length() - 2); // remove last comma
-      statement += ")";
       statement += ";";
       mySqlQuery(mysql, statement);
    }
@@ -95,8 +96,6 @@ void doLargeResultSet(MYSQL &mysql) {
          mySqlStatementFetch(statement.get());
       }
    });
-
-   mySqlStatementClose(mysql, statement.get());
 
    std::cout << " " << resultSizeMB / timeTaken << " MB/s\n";
 }
