@@ -33,6 +33,8 @@ void doSmallTx2(MYSQL &mysql) {
       }
    });
 
+   mySqlStatementClose(mysql, statement.get());
+
    std::cout << iterations / timeTaken << " msg/s\n";
 }
 
@@ -94,6 +96,8 @@ void doLargeResultSet(MYSQL &mysql) {
       }
    });
 
+   mySqlStatementClose(mysql, statement.get());
+
    std::cout << " " << resultSizeMB / timeTaken << " MB/s\n";
 }
 
@@ -136,7 +140,7 @@ int main(int argc, const char* argv[]) {
          std::cout << "Preparing YCSB temporary table\n";
          prepareYcsb(mysql);
 
-         //doSmallTx2(mysql);
+         doSmallTx2(mysql);
          doLargeResultSet(mysql);
       } catch (const std::runtime_error &e) {
          std::cout << e.what() << '\n';

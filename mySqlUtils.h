@@ -137,4 +137,11 @@ auto mySqlStatementStore(MYSQL_STMT *statement) {
     }
 }
 
+auto mySqlStatementClose(MYSQL &mysql, MYSQL_STMT* statement) {
+    if (mysql_stmt_close(statement) != 0) {
+        throw std::runtime_error(std::string("Couldn't close statement ") + mysql_error(mysql));
+    }
+}
+
+
 #endif //MYSQLBENCHMARK_MYSQLUTILS_H
