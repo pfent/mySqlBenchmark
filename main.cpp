@@ -53,7 +53,7 @@ void prepareYcsb(MYSQL &mysql) {
          std::cout << "\r" << static_cast<double>(i) * 100 / ycsb_tuple_count << "%" << std::flush;
       }
       auto statement = std::string("INSERT INTO Ycsb VALUES ");
-      for (int j = 0; j < 100; ++j, ++it) {
+      for (int j = 0; j < 1000; ++j, ++it) {
          auto&[key, value] = *it;
          statement += "(" + std::to_string(key) + ", ";
          for (auto &v : value.rows) {

@@ -10,7 +10,7 @@
 #include "util/doNotOptimize.h"
 
 /// YCSB Benchmark workload, based on Alexander van Renen's version
-static constexpr size_t ycsb_tuple_count = 100000;
+static constexpr size_t ycsb_tuple_count = 1000000;
 static constexpr size_t ycsb_field_count = 10;
 static constexpr size_t ycsb_field_length = 100;
 static constexpr size_t ycsb_tx_count = 1000000;
