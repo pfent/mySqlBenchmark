@@ -63,7 +63,7 @@ auto mySqlConnect(MYSQL &mysql, MySqlConnection connectionType, const char *user
 }
 
 auto mySqlQuery(MYSQL &mysql, const std::string &query) {
-    if (mysql_real_query(&mysql, query.data(), query.length())) {
+    if (mysql_real_query(&mysql, query.data(), static_cast<unsigned long>(query.length()))) {
         throw std::runtime_error(std::string("Couldn't execute query ") + mysql_error(&mysql));
     }
 }
@@ -101,7 +101,7 @@ auto mySqlCreateStatement(MYSQL &mysql) {
  * value shall not contain a semicolon ;
  */
 auto mySqlPrepareStatement(MYSQL_STMT *statement, const std::string &value) {
-    if (mysql_stmt_prepare(statement, value.c_str(), value.length()) != 0) {
+    if (mysql_stmt_prepare(statement, value.c_str(), static_cast<unsigned long>(value.length())) != 0) {
         throw std::runtime_error(std::string("Couldn't prepare statement ") + mysql_stmt_error(statement));
     }
 }

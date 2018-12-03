@@ -4,6 +4,7 @@
 #include <vector>
 #include <random>
 #include <algorithm>
+#include <string>
 #include "mySqlUtils.h"
 #include "ycsb.h"
 

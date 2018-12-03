@@ -60,7 +60,7 @@ struct YcsbDataSet {
    }
 };
 
-auto generateLookupKeys(size_t count, size_t maxValue) {
+auto generateLookupKeys(size_t count, uint32_t maxValue) {
    auto rand = Random32();
    auto res = std::vector<YcsbKey>();
    res.reserve(count);
