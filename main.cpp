@@ -1,6 +1,5 @@
 #include <chrono>
 #include <iostream>
-#include <mysql.h>
 #include <vector>
 #include <random>
 #include <algorithm>
@@ -115,12 +114,13 @@ void doLargeResultSet(MYSQL &mysql) {
  */
 int main(int argc, const char* argv[]) {
    if (argc < 3) {
-      std::cout << "Usage: mySqlBenchmark <user> <password> <database>\n";
+      std::cout << "Usage: mySqlBenchmark <user> <password> <host> <database>\n";
       return 1;
    }
    auto user = argv[1];
    auto password = argv[2];
-   auto database = argc > 3 ? argv[3] : "mysql";
+   auto host = argc > 3 ? argv[3] : nullptr;
+   auto database = argc > 4 ? argv[4] : "mysql";
 
    auto connections = {
          MySqlConnection::TCP,
@@ -135,7 +135,7 @@ int main(int argc, const char* argv[]) {
    for (auto connection : connections) {
       try {
          mysql_init(&mysql);
-         const auto c = mySqlConnect(mysql, connection, user, password, database);
+         const auto c = mySqlConnect(mysql, connection, host, user, password, database);
 
          std::cout << "Preparing YCSB temporary table\n";
          prepareYcsb(mysql);
