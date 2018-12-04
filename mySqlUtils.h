@@ -56,7 +56,7 @@ mySqlConnect(MYSQL &mysql, MySqlConnection connectionType, const char* host, con
 
    mysql_options(&mysql, MYSQL_OPT_PROTOCOL, &protocolType);
 
-   if (!mysql_real_connect(&mysql, nullptr, user, password, database, 0, nullptr, 0)) {
+   if (!mysql_real_connect(&mysql, host, user, password, database, 0, nullptr, 0)) {
       throw std::runtime_error(std::string("Couldn't connect: ") + mysql_error(&mysql));
    }
 
