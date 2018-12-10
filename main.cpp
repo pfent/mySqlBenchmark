@@ -47,7 +47,7 @@ void doSmallTx(MYSQL &mysql) {
 
          auto expected = std::array<char, ycsb_field_length>();
          db.lookup(lookupKey, which, result.begin());
-         if (not std::equal(result.begin(), result.end(), expected.begin())) {
+         if (! std::equal(result.begin(), result.end(), expected.begin())) {
             throw std::runtime_error("unexpected result");
          }
       }

@@ -55,11 +55,16 @@ inline __attribute__((always_inline)) void ClobberMemory() {
 	asm volatile("" : : : "memory");
 }
 #elif defined(_MSC_VER)
+#pragma optimize("", off)
+
+// See: https://github.com/facebook/folly/blob/a3c67e006de0e32ecad1bc406ab74ca767e4caee/folly/Benchmark.h#L243
 template <class Tp>
-inline BENCHMARK_ALWAYS_INLINE void DoNotOptimize(Tp const& value) {
-	internal::UseCharPointer(&reinterpret_cast<char const volatile&>(value));
+inline BENCHMARK_ALWAYS_INLINE void DoNotOptimize(Tp && value) {
+	value = value;
 	_ReadWriteBarrier();
 }
+
+#pragma optimize("", on)
 
 inline BENCHMARK_ALWAYS_INLINE void ClobberMemory() { _ReadWriteBarrier(); }
 #else
