@@ -111,7 +111,9 @@ void doLargeResultSet(MYSQL &mysql) {
       mySqlExectureStatement(statement.get());
 
       for (size_t i = 0; i < ycsb_tuple_count; ++i) {
+         DoNotOptimize(result);
          mySqlStatementFetch(statement.get());
+         ClobberMemory();
       }
    });
 
