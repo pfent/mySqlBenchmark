@@ -144,5 +144,10 @@ auto mySqlStatementClose(MYSQL &mysql, MYSQL_STMT* statement) {
    }
 }
 
+auto mySqlBindParam(MYSQL_STMT* statement, MYSQL_BIND* bind) {
+   if (mysql_stmt_bind_param(statement, bind) != 0) {
+      throw std::runtime_error(std::string("Couldn't bind parameter ") + mysql_stmt_error(statement));
+   }
+}
 
 #endif //MYSQLBENCHMARK_MYSQLUTILS_H

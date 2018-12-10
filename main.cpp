@@ -7,36 +7,54 @@
 #include "mySqlUtils.h"
 #include "ycsb.h"
 
-void doSmallTx2(MYSQL &mysql) {
-   const auto iterations = size_t(1e6);
-   std::cout << iterations << " very small prepared statements\n";
+static auto db = YcsbDatabase();
 
-   auto statement = mySqlCreateStatement(mysql);
-   mySqlPrepareStatement(statement.get(), "SELECT 1");
-   auto result = long();
+void doSmallTx(MYSQL &mysql) {
+   auto rand = Random32();
+   const auto lookupKeys = generateZipfLookupKeys(ycsb_tx_count);
+
+   std::cout << "benchmarking " << lookupKeys.size() << " small transactions" << '\n';
+
+   auto result = std::array<char, ycsb_field_length>();
    auto resultBind = MYSQL_BIND();
-   resultBind.buffer_type = MYSQL_TYPE_LONG;
+   resultBind.buffer_type = MYSQL_TYPE_STRING;
    resultBind.buffer = &result;
    resultBind.buffer_length = sizeof(result);
 
-   mySqlBindResult(statement.get(), &resultBind);
+   auto columnStatements = std::vector<decltype(mySqlCreateStatement(mysql))>();
+   for (size_t i = 1; i < ycsb_field_count + 1; ++i) {
+      columnStatements.push_back(mySqlCreateStatement(mysql));
+      auto statement = std::string("SELECT v") + std::to_string(i) + " FROM #Ycsb WHERE ycsb_key=?;";
+      mySqlPrepareStatement(columnStatements.back().get(), statement);
+      mySqlBindResult(columnStatements.back().get(), &resultBind);
+   }
 
-   const auto timeTaken = bench([&] {
-      for (size_t i = 0; i < iterations; ++i) {
+   auto param = YcsbKey();
+   auto paramBind = MYSQL_BIND();
+   paramBind.buffer_type = MYSQL_TYPE_LONG;
+   paramBind.buffer = reinterpret_cast<char*>(&param);
+   paramBind.is_null = nullptr;
+   paramBind.length = nullptr;
+
+   auto timeTaken = bench([&] {
+      for (auto lookupKey: lookupKeys) {
+         auto which = rand.next() % ycsb_field_count;
+         auto &statement = columnStatements[which];
+
+         mySqlBindParam(statement.get(), &paramBind);
          mySqlExectureStatement(statement.get());
          mySqlStatementFetch(statement.get());
 
-         if (result != 1) {
-            throw std::runtime_error("Unexpected data returned");
+         auto expected = std::array<char, ycsb_field_length>();
+         db.lookup(lookupKey, which, result.begin());
+         if (not std::equal(result.begin(), result.end(), expected.begin())) {
+            throw std::runtime_error("unexpected result");
          }
-         result = 0;
       }
    });
 
-   std::cout << iterations / timeTaken << " msg/s\n";
+   std::cout << " " << lookupKeys.size() / timeTaken << " msg/s\n";
 }
-
-static auto db = YcsbDatabase();
 
 void prepareYcsb(MYSQL &mysql) {
    auto create = std::string("CREATE TEMPORARY TABLE Ycsb ( ycsb_key INTEGER PRIMARY KEY NOT NULL, ");
@@ -140,7 +158,7 @@ int main(int argc, const char* argv[]) {
          std::cout << "Preparing YCSB temporary table\n";
          prepareYcsb(mysql);
 
-         doSmallTx2(mysql);
+         doSmallTx(mysql);
          doLargeResultSet(mysql);
       } catch (const std::runtime_error &e) {
          std::cout << e.what() << '\n';
