@@ -10,7 +10,7 @@ add_executable(mySqlBenchmark main.cpp)
 
 if ( WIN32 )
     set(MYSQL_DEFAULT_DIR "C:/Program Files/MySQL/MySQL Connector C 6.1")
-    set(MYSQL_CLIENT_NAME "/lib/libmysql.dll")
+    set(MYSQL_CLIENT_NAME "/lib/libmysql.lib")
     set(MYSQL_INCLUDE_DIR "${MYSQL_DEFAULT_DIR}/include")
 else ()
     set(MYSQL_DEFAULT_DIR "/usr")
