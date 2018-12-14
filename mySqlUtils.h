@@ -72,7 +72,7 @@ auto mySqlQuery(MYSQL &mysql, const std::string &query) {
 auto mySqlUseResult(MYSQL &mysql) {
    auto result = mysql_use_result(&mysql);
    if (result == nullptr) {
-      throw std::runtime_error(std::string("Couldn't fetch query ") + mysql_error(&mysql));
+      throw std::runtime_error(std::string("Couldn't mysql_use_result query ") + mysql_error(&mysql));
    }
    return std::unique_ptr<MYSQL_RES, decltype(&mysql_free_result)>(result, &mysql_free_result);
 }

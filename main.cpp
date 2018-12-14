@@ -41,6 +41,7 @@ void doSmallTx(MYSQL &mysql) {
          auto which = rand.next() % ycsb_field_count;
          auto &statement = columnStatements[which];
 
+         param = lookupKey;
          mySqlBindParam(statement.get(), &paramBind);
          mySqlExectureStatement(statement.get());
          mySqlStatementFetch(statement.get());
