@@ -65,7 +65,7 @@ mySqlConnect(MYSQL &mysql, MySqlConnection connectionType, const char* host, con
 
 auto mySqlQuery(MYSQL &mysql, const std::string &query) {
    if (mysql_real_query(&mysql, query.data(), static_cast<unsigned long>(query.length()))) {
-      throw std::runtime_error(std::string("Couldn't execute query ") + mysql_error(&mysql));
+      throw std::runtime_error(std::string("Couldn't execute query: ") + query + "\n" + mysql_error(&mysql));
    }
 }
 
@@ -103,7 +103,8 @@ auto mySqlCreateStatement(MYSQL &mysql) {
  */
 auto mySqlPrepareStatement(MYSQL_STMT* statement, const std::string &value) {
    if (mysql_stmt_prepare(statement, value.c_str(), static_cast<unsigned long>(value.length())) != 0) {
-      throw std::runtime_error(std::string("Couldn't prepare statement ") + mysql_stmt_error(statement));
+      throw std::runtime_error(
+            std::string("Couldn't prepare statement: ") + value + "\n" + mysql_stmt_error(statement));
    }
 }
 

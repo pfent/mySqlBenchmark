@@ -24,7 +24,7 @@ void doSmallTx(MYSQL &mysql) {
    auto columnStatements = std::vector<decltype(mySqlCreateStatement(mysql))>();
    for (size_t i = 1; i < ycsb_field_count + 1; ++i) {
       columnStatements.push_back(mySqlCreateStatement(mysql));
-      auto statement = std::string("SELECT v") + std::to_string(i) + " FROM #Ycsb WHERE ycsb_key=?;";
+      auto statement = std::string("SELECT v") + std::to_string(i) + " FROM Ycsb WHERE ycsb_key=?";
       mySqlPrepareStatement(columnStatements.back().get(), statement);
       mySqlBindResult(columnStatements.back().get(), &resultBind);
    }
@@ -46,8 +46,8 @@ void doSmallTx(MYSQL &mysql) {
          mySqlStatementFetch(statement.get());
 
          auto expected = std::array<char, ycsb_field_length>();
-         db.lookup(lookupKey, which, result.begin());
-         if (! std::equal(result.begin(), result.end(), expected.begin())) {
+         db.lookup(lookupKey, which, expected.begin());
+         if (not std::equal(result.begin(), result.end(), expected.begin())) {
             throw std::runtime_error("unexpected result");
          }
       }
