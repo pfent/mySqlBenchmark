@@ -51,6 +51,9 @@ void doSmallTx(MYSQL &mysql) {
          if (not std::equal(result.begin(), result.end(), expected.begin())) {
             throw std::runtime_error("unexpected result");
          }
+
+         // should probably be handled by a unique_ptr from statementFetch
+         mysql_stmt_free_result(statement.get());
       }
    });
 
